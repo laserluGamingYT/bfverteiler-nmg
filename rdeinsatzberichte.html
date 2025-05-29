@@ -514,228 +514,200 @@
         </div>
     </div>
 
-    <script>
-        // Zentrale Datenstruktur - wird im Memory gehalten
-        let reports = [];
-        let filteredReports = [];
-        let editingId = null;
+     <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
-        // Beim Laden der Seite versuchen, gespeicherte Daten zu laden
-        window.addEventListener('load', function() {
-            loadReports();
+    <script>
+    // 🔧 HIER DEINE EIGENE KONFIGURATION EINTRAGEN!
+    const firebaseConfig = {
+  apiKey: "AIzaSyBMcltJKt9ANy7usCiQu5r7oA_g8QrjKAg",
+  authDomain: "nmgbf-6fbfd.firebaseapp.com",
+  databaseURL: "https://nmgbf-6fbfd-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "nmgbf-6fbfd",
+  storageBucket: "nmgbf-6fbfd.firebasestorage.app",
+  messagingSenderId: "762040096687",
+  appId: "1:762040096687:web:40d94c972b117f0c78015a",
+  measurementId: "G-765C8X09Q4"
+};
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    let reports = [];
+    let filteredReports = [];
+    let editingId = null;
+
+    window.addEventListener('load', function () {
+        loadReports();
+    });
+
+    function loadReports() {
+        db.ref('/reports').on('value', snapshot => {
+            const data = snapshot.val();
+            reports = data ? Object.values(data).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)) : [];
+            filteredReports = [...reports];
             renderReports();
             updateStats();
         });
+    }
 
-        // Daten im Browser-Speicher laden (funktioniert NICHT in Claude.ai)
-        function loadReports() {
-            // In einer echten Umgebung würde hier localStorage verwendet werden
-            // Da localStorage in Claude.ai nicht verfügbar ist, bleiben die Daten nur in der Session
-            console.log('Hinweis: Daten werden nur für diese Session gespeichert. In einer echten Umgebung würde localStorage verwendet.');
+    function saveToStorage() {
+        const updates = {};
+        reports.forEach(report => {
+            updates[`/reports/${report.id}`] = report;
+        });
+        db.ref().update(updates);
+    }
+
+    function generateId() {
+        const today = new Date();
+        const year = today.getFullYear();
+        const count = reports.length + 1;
+        return `E-${year}-${String(count).padStart(3, '0')}`;
+    }
+
+    function saveReport(event) {
+        event.preventDefault();
+
+        const formData = {
+            id: editingId || generateId(),
+            status: document.getElementById('status').value,
+            priority: document.getElementById('priority').value,
+            vehicle: document.getElementById('vehicle').value,
+            crew: document.getElementById('crew').value,
+            address: document.getElementById('address').value,
+            emergency: document.getElementById('emergency').value,
+            time: new Date().toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' }),
+            responseTime: document.getElementById('responseTime').value ? parseInt(document.getElementById('responseTime').value) : null,
+            description: document.getElementById('description').value,
+            outcome: document.getElementById('outcome').value,
+            timestamp: new Date().toISOString()
+        };
+
+        db.ref(`/reports/${formData.id}`).set(formData);
+        closeModal();
+    }
+
+    function deleteReport(id) {
+        if (confirm('Sind Sie sicher, dass Sie diesen Einsatzbericht löschen möchten?')) {
+            db.ref(`/reports/${id}`).remove();
         }
+    }
 
-        // Daten im Browser-Speicher speichern (funktioniert NICHT in Claude.ai)
-        function saveToStorage() {
-            // In einer echten Umgebung würde hier localStorage verwendet werden
-            console.log('Daten würden im localStorage gespeichert werden.');
+    function clearAllReports() {
+        if (confirm('Sind Sie sicher, dass Sie ALLE Einsatzberichte löschen möchten?')) {
+            db.ref('/reports').remove();
         }
+    }
 
-        function generateId() {
-            const today = new Date();
-            const year = today.getFullYear();
-            const count = reports.length + 1;
-            return `E-${year}-${String(count).padStart(3, '0')}`;
-        }
+    function exportReports() {
+        const dataStr = JSON.stringify(reports, null, 2);
+        const dataBlob = new Blob([dataStr], { type: 'application/json' });
+        const url = URL.createObjectURL(dataBlob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `einsatzberichte_backup_${new Date().toISOString().split('T')[0]}.json`;
+        link.click();
+        URL.revokeObjectURL(url);
+    }
 
-        function openModal() {
-            editingId = null;
-            document.getElementById('modalTitle').textContent = 'Neuer Einsatzbericht';
-            document.getElementById('reportForm').reset();
-            document.getElementById('reportModal').style.display = 'block';
-        }
+    function filterReports() {
+        const statusFilter = document.getElementById('statusFilter').value;
+        const priorityFilter = document.getElementById('priorityFilter').value;
 
-        function closeModal() {
-            document.getElementById('reportModal').style.display = 'none';
-            editingId = null;
-        }
+        filteredReports = reports.filter(report => {
+            const statusMatch = statusFilter === 'all' || report.status === statusFilter;
+            const priorityMatch = priorityFilter === 'all' || report.priority === priorityFilter;
+            return statusMatch && priorityMatch;
+        });
 
-        function saveReport(event) {
-            event.preventDefault();
-            
-            const formData = {
-                id: editingId || generateId(),
-                status: document.getElementById('status').value,
-                priority: document.getElementById('priority').value,
-                vehicle: document.getElementById('vehicle').value,
-                crew: document.getElementById('crew').value,
-                address: document.getElementById('address').value,
-                emergency: document.getElementById('emergency').value,
-                time: new Date().toLocaleTimeString('de-DE', {hour: '2-digit', minute: '2-digit'}),
-                responseTime: document.getElementById('responseTime').value ? parseInt(document.getElementById('responseTime').value) : null,
-                description: document.getElementById('description').value,
-                outcome: document.getElementById('outcome').value,
-                timestamp: new Date().toISOString()
-            };
+        renderReports();
+    }
 
-            if (editingId) {
-                const index = reports.findIndex(r => r.id === editingId);
-                if (index !== -1) {
-                    reports[index] = formData;
-                }
-            } else {
-                reports.unshift(formData);
-            }
+    function updateStats() {
+        document.getElementById('totalReports').textContent = reports.length;
+        document.getElementById('activeReports').textContent = reports.filter(r => r.status === 'active').length;
+        document.getElementById('completedReports').textContent = reports.filter(r => r.status === 'completed').length;
 
-            saveToStorage();
-            closeModal();
-            filterReports();
-            updateStats();
-        }
+        const completedWithTime = reports.filter(r => r.responseTime);
+        const avgTime = completedWithTime.length > 0
+            ? Math.round(completedWithTime.reduce((sum, r) => sum + r.responseTime, 0) / completedWithTime.length)
+            : 0;
+        document.getElementById('avgResponseTime').textContent = avgTime;
+    }
 
-        function deleteReport(id) {
-            if (confirm('Sind Sie sicher, dass Sie diesen Einsatzbericht löschen möchten?')) {
-                reports = reports.filter(r => r.id !== id);
-                saveToStorage();
-                filterReports();
-                updateStats();
-            }
-        }
+    function renderReports() {
+        const container = document.getElementById('reportsContainer');
 
-        function editReport(id) {
-            const report = reports.find(r => r.id === id);
-            if (!report) return;
-
-            editingId = id;
-            document.getElementById('modalTitle').textContent = 'Einsatzbericht bearbeiten';
-            
-            document.getElementById('status').value = report.status;
-            document.getElementById('priority').value = report.priority;
-            document.getElementById('vehicle').value = report.vehicle;
-            document.getElementById('crew').value = report.crew;
-            document.getElementById('address').value = report.address;
-            document.getElementById('emergency').value = report.emergency;
-            document.getElementById('responseTime').value = report.responseTime || '';
-            document.getElementById('description').value = report.description;
-            document.getElementById('outcome').value = report.outcome;
-            
-            document.getElementById('reportModal').style.display = 'block';
-        }
-
-        function renderReports() {
-            const container = document.getElementById('reportsContainer');
-            
-            if (filteredReports.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <h3>Keine Einsatzberichte gefunden</h3>
-                        <p>${reports.length === 0 ? 'Klicken Sie auf "Neuer Einsatz" um den ersten Bericht zu erstellen.' : 'Es wurden keine Berichte gefunden, die den aktuellen Filterkriterien entsprechen.'}</p>
-                    </div>
-                `;
-                return;
-            }
-
-            container.innerHTML = filteredReports.map(report => `
-                <div class="report-card">
-                    <button class="delete-btn" onclick="deleteReport('${report.id}')" title="Löschen">×</button>
-                    <div class="status-badge status-${report.status}">
-                        ${report.status === 'active' ? 'AKTIV' : report.status === 'completed' ? 'ABGESCHLOSSEN' : 'ABGEBROCHEN'}
-                    </div>
-                    
-                    <div class="report-header">
-                        <div class="report-id" onclick="editReport('${report.id}')" style="cursor: pointer;" title="Klicken zum Bearbeiten">${report.id}</div>
-                        <div class="priority ${report.priority}">${report.priority === 'high' ? 'HOCH' : report.priority === 'medium' ? 'MITTEL' : 'NIEDRIG'}</div>
-                    </div>
-                    
-                    <div class="report-details">
-                        <div class="detail-item">
-                            <div class="detail-label">Fahrzeug</div>
-                            <div class="detail-value">${report.vehicle}</div>
-                        </div>
-                        <div class="detail-item">
-                            <div class="detail-label">Besatzung</div>
-                            <div class="detail-value">${report.crew}</div>
-                        </div>
-                        <div class="detail-item">
-                            <div class="detail-label">Einsatzort</div>
-                            <div class="detail-value">${report.address}</div>
-                        </div>
-                        <div class="detail-item">
-                            <div class="detail-label">Notfall</div>
-                            <div class="detail-value">${report.emergency}</div>
-                        </div>
-                        <div class="detail-item">
-                            <div class="detail-label">Alarmzeit</div>
-                            <div class="detail-value">${report.time} Uhr</div>
-                        </div>
-                        <div class="detail-item">
-                            <div class="detail-label">Anfahrtszeit</div>
-                            <div class="detail-value">${report.responseTime ? report.responseTime + ' Min' : 'Läuft'}</div>
-                        </div>
-                    </div>
-                    
-                    <div class="report-description">
-                        <strong>Beschreibung:</strong><br>
-                        ${report.description}
-                        <br><br>
-                        <strong>Ergebnis:</strong><br>
-                        ${report.outcome}
-                    </div>
+        if (filteredReports.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <h3>Keine Einsatzberichte gefunden</h3>
+                    <p>${reports.length === 0 ? 'Klicken Sie auf "Neuer Einsatz" um den ersten Bericht zu erstellen.' : 'Es wurden keine Berichte gefunden, die den aktuellen Filterkriterien entsprechen.'}</p>
                 </div>
-            `).join('');
+            `;
+            return;
         }
 
-        function filterReports() {
-            const statusFilter = document.getElementById('statusFilter').value;
-            const priorityFilter = document.getElementById('priorityFilter').value;
-            
-            filteredReports = reports.filter(report => {
-                const statusMatch = statusFilter === 'all' || report.status === statusFilter;
-                const priorityMatch = priorityFilter === 'all' || report.priority === priorityFilter;
-                return statusMatch && priorityMatch;
-            });
-            
-            renderReports();
-        }
+        container.innerHTML = filteredReports.map(report => `
+            <div class="report-card">
+                <button class="delete-btn" onclick="deleteReport('${report.id}')">×</button>
+                <div class="status-badge status-${report.status}">${report.status.toUpperCase()}</div>
+                <div class="report-header">
+                    <div class="report-id" onclick="editReport('${report.id}')">${report.id}</div>
+                    <div class="priority ${report.priority}">${report.priority.toUpperCase()}</div>
+                </div>
+                <div class="report-details">
+                    <div class="detail-item"><div class="detail-label">Fahrzeug</div><div class="detail-value">${report.vehicle}</div></div>
+                    <div class="detail-item"><div class="detail-label">Besatzung</div><div class="detail-value">${report.crew}</div></div>
+                    <div class="detail-item"><div class="detail-label">Einsatzort</div><div class="detail-value">${report.address}</div></div>
+                    <div class="detail-item"><div class="detail-label">Notfall</div><div class="detail-value">${report.emergency}</div></div>
+                    <div class="detail-item"><div class="detail-label">Alarmzeit</div><div class="detail-value">${report.time}</div></div>
+                    <div class="detail-item"><div class="detail-label">Anfahrtszeit</div><div class="detail-value">${report.responseTime ? report.responseTime + ' Min' : 'Läuft'}</div></div>
+                </div>
+                <div class="report-description">
+                    <strong>Beschreibung:</strong><br>${report.description}<br><br>
+                    <strong>Ergebnis:</strong><br>${report.outcome}
+                </div>
+            </div>
+        `).join('');
+    }
 
-        function updateStats() {
-            document.getElementById('totalReports').textContent = reports.length;
-            document.getElementById('activeReports').textContent = reports.filter(r => r.status === 'active').length;
-            document.getElementById('completedReports').textContent = reports.filter(r => r.status === 'completed').length;
-            
-            const completedWithTime = reports.filter(r => r.responseTime);
-            const avgTime = completedWithTime.length > 0 
-                ? Math.round(completedWithTime.reduce((sum, r) => sum + r.responseTime, 0) / completedWithTime.length)
-                : 0;
-            document.getElementById('avgResponseTime').textContent = avgTime;
-        }
+    function openModal() {
+        editingId = null;
+        document.getElementById('modalTitle').textContent = 'Neuer Einsatzbericht';
+        document.getElementById('reportForm').reset();
+        document.getElementById('reportModal').style.display = 'block';
+    }
 
-        function clearAllReports() {
-            if (confirm('Sind Sie sicher, dass Sie ALLE Einsatzberichte löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden!')) {
-                reports = [];
-                saveToStorage();
-                filterReports();
-                updateStats();
-            }
-        }
+    function closeModal() {
+        document.getElementById('reportModal').style.display = 'none';
+        editingId = null;
+    }
 
-        function exportReports() {
-            const dataStr = JSON.stringify(reports, null, 2);
-            const dataBlob = new Blob([dataStr], {type: 'application/json'});
-            const url = URL.createObjectURL(dataBlob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = `einsatzberichte_backup_${new Date().toISOString().split('T')[0]}.json`;
-            link.click();
-            URL.revokeObjectURL(url);
-        }
+    function editReport(id) {
+        const report = reports.find(r => r.id === id);
+        if (!report) return;
+        editingId = id;
+        document.getElementById('modalTitle').textContent = 'Einsatzbericht bearbeiten';
+        document.getElementById('status').value = report.status;
+        document.getElementById('priority').value = report.priority;
+        document.getElementById('vehicle').value = report.vehicle;
+        document.getElementById('crew').value = report.crew;
+        document.getElementById('address').value = report.address;
+        document.getElementById('emergency').value = report.emergency;
+        document.getElementById('responseTime').value = report.responseTime || '';
+        document.getElementById('description').value = report.description;
+        document.getElementById('outcome').value = report.outcome;
+        document.getElementById('reportModal').style.display = 'block';
+    }
 
-        // Modal schließen bei Klick außerhalb
-        window.onclick = function(event) {
-            const modal = document.getElementById('reportModal');
-            if (event.target === modal) {
-                closeModal();
-            }
-        }
+    // Modal schließen bei Klick außerhalb
+    window.onclick = function (event) {
+        const modal = document.getElementById('reportModal');
+        if (event.target === modal) closeModal();
+    };
     </script>
 </body>
 </html>
