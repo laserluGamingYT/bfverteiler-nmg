@@ -1,322 +1,299 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Garagenbelegung - Rettungswache</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            margin: 0;
-            padding: 20px;
-            min-height: 100vh;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            overflow: hidden;
-        }
-
-        .header {
-            background: linear-gradient(45deg, #dc2626, #ef4444);
-            color: white;
-            padding: 20px;
-            text-align: center;
-        }
-
-        .header h1 {
-            margin: 0;
-            font-size: 2em;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-        }
-
-        .garage-layout {
-            padding: 30px;
-            background: #f8fafc;
-        }
-
-        .garage-row {
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-            margin-bottom: 30px;
-            flex-wrap: wrap;
-        }
-
-        .garage-box {
-            width: 180px;
-            height: 120px;
-            border: 3px solid #cbd5e1;
-            border-radius: 10px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            background: white;
-            position: relative;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-        }
-
-        .garage-box:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 15px rgba(0,0,0,0.15);
-        }
-
-        .garage-box.occupied {
-            background: linear-gradient(135deg, #dc2626, #ef4444);
-            border-color: #b91c1c;
-            color: white;
-        }
-
-        .garage-box.empty {
-            background: linear-gradient(135deg, #10b981, #34d399);
-            border-color: #059669;
-            color: white;
-        }
-
-        .garage-number {
-            font-size: 1.2em;
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-
-        .vehicle-type {
-            font-size: 1.1em;
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-
-        .status {
-            font-size: 0.9em;
-            opacity: 0.9;
-        }
-
-        .legend {
-            display: flex;
-            justify-content: center;
-            gap: 30px;
-            margin-top: 20px;
-            flex-wrap: wrap;
-        }
-
-        .legend-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .legend-box {
-            width: 20px;
-            height: 20px;
-            border-radius: 4px;
-        }
-
-        .legend-nef {
-            background: linear-gradient(135deg, #dc2626, #ef4444);
-        }
-
-        .legend-rtw {
-            background: linear-gradient(135deg, #dc2626, #ef4444);
-        }
-
-        .legend-empty {
-            background: linear-gradient(135deg, #10b981, #34d399);
-        }
-
-        .controls {
-            text-align: center;
-            padding: 20px;
-            background: #e2e8f0;
-            border-top: 1px solid #cbd5e1;
-        }
-
-        .btn {
-            background: linear-gradient(45deg, #3b82f6, #1d4ed8);
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 1em;
-            margin: 0 10px;
-            transition: all 0.3s ease;
-        }
-
-        .btn:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3);
-        }
-
-        .timestamp {
-            text-align: center;
-            color: #64748b;
-            font-size: 0.9em;
-            padding: 10px;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Garagenbelegung - Rettungswache</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      margin: 0;
+      padding: 20px;
+      min-height: 100vh;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 15px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+      overflow: hidden;
+    }
+    .header {
+      background: linear-gradient(45deg, #dc2626, #ef4444);
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+    .header h1 {
+      margin: 0;
+      font-size: 2em;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    }
+    .garage-layout {
+      padding: 30px;
+      background: #f8fafc;
+    }
+    .garage-row {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin-bottom: 30px;
+      flex-wrap: wrap;
+    }
+    .garage-box {
+      width: 180px;
+      height: 120px;
+      border: 3px solid #cbd5e1;
+      border-radius: 10px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      background: white;
+      position: relative;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    .garage-box:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+    }
+    .garage-box.occupied {
+      background: linear-gradient(135deg, #dc2626, #ef4444);
+      border-color: #b91c1c;
+      color: white;
+    }
+    .garage-box.empty {
+      background: linear-gradient(135deg, #10b981, #34d399);
+      border-color: #059669;
+      color: white;
+    }
+    .garage-number {
+      font-size: 1.2em;
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+    .vehicle-type {
+      font-size: 1.1em;
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+    .status {
+      font-size: 0.9em;
+      opacity: 0.9;
+    }
+    .legend {
+      display: flex;
+      justify-content: center;
+      gap: 30px;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .legend-box {
+      width: 20px;
+      height: 20px;
+      border-radius: 4px;
+    }
+    .legend-nef, .legend-rtw {
+      background: linear-gradient(135deg, #dc2626, #ef4444);
+    }
+    .legend-empty {
+      background: linear-gradient(135deg, #10b981, #34d399);
+    }
+    .controls {
+      text-align: center;
+      padding: 20px;
+      background: #e2e8f0;
+      border-top: 1px solid #cbd5e1;
+    }
+    .btn {
+      background: linear-gradient(45deg, #3b82f6, #1d4ed8);
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1em;
+      margin: 0 10px;
+      transition: all 0.3s ease;
+    }
+    .btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3);
+    }
+    .timestamp {
+      text-align: center;
+      color: #64748b;
+      font-size: 0.9em;
+      padding: 10px;
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>🚑 Garagenbelegung Rettungswache</h1>
-        </div>
-        
-        <div class="garage-layout">
-            <div class="garage-row">
-                <div class="garage-box occupied" onclick="toggleGarage(1)">
-                    <div class="garage-number">Garage 1</div>
-                    <div class="vehicle-type">NEF</div>
-                    <div class="status">Belegt</div>
-                </div>
-                
-                <div class="garage-box occupied" onclick="toggleGarage(2)">
-                    <div class="garage-number">Garage 2</div>
-                    <div class="vehicle-type">RTW</div>
-                    <div class="status">Belegt</div>
-                </div>
-                
-                <div class="garage-box empty" onclick="toggleGarage(3)">
-                    <div class="garage-number">Garage 3</div>
-                    <div class="vehicle-type">-</div>
-                    <div class="status">Frei</div>
-                </div>
-                
-                <div class="garage-box occupied" onclick="toggleGarage(4)">
-                    <div class="garage-number">Garage 4</div>
-                    <div class="vehicle-type">RTW</div>
-                    <div class="status">Belegt</div>
-                </div>
-                
-                <div class="garage-box empty" onclick="toggleGarage(5)">
-                    <div class="garage-number">Garage 5</div>
-                    <div class="vehicle-type">-</div>
-                    <div class="status">Frei</div>
-                </div>
-            </div>
-            
-            <div class="legend">
-                <div class="legend-item">
-                    <div class="legend-box legend-nef"></div>
-                    <span>NEF (Notarzteinsatzfahrzeug)</span>
-                </div>
-                <div class="legend-item">
-                    <div class="legend-box legend-rtw"></div>
-                    <span>RTW (Rettungstransportwagen)</span>
-                </div>
-                <div class="legend-item">
-                    <div class="legend-box legend-empty"></div>
-                    <span>Garage frei</span>
-                </div>
-            </div>
-        </div>
-        
-        <div class="controls">
-            <button class="btn" onclick="addNEF()">NEF zuweisen</button>
-            <button class="btn" onclick="addRTW()">RTW zuweisen</button>
-            <button class="btn" onclick="clearAll()">Alle freigeben</button>
-        </div>
-        
-        <div class="timestamp">
-            <p>Letzte Aktualisierung: <span id="timestamp"></span></p>
-        </div>
+  <div class="container">
+    <div class="header">
+      <h1>🚑 Garagenbelegung Rettungswache</h1>
     </div>
 
-    <script>
-        let garages = {
-            1: { type: 'NEF', occupied: true },
-            2: { type: 'RTW', occupied: true },
-            3: { type: '', occupied: false },
-            4: { type: 'RTW', occupied: true },
-            5: { type: '', occupied: false }
-        };
+    <div class="garage-layout">
+      <div class="garage-row">
+        <div class="garage-box" onclick="toggleGarage(1)">
+          <div class="garage-number">Garage 1</div>
+          <div class="vehicle-type">-</div>
+          <div class="status">Frei</div>
+        </div>
+        <div class="garage-box" onclick="toggleGarage(2)">
+          <div class="garage-number">Garage 2</div>
+          <div class="vehicle-type">-</div>
+          <div class="status">Frei</div>
+        </div>
+        <div class="garage-box" onclick="toggleGarage(3)">
+          <div class="garage-number">Garage 3</div>
+          <div class="vehicle-type">-</div>
+          <div class="status">Frei</div>
+        </div>
+        <div class="garage-box" onclick="toggleGarage(4)">
+          <div class="garage-number">Garage 4</div>
+          <div class="vehicle-type">-</div>
+          <div class="status">Frei</div>
+        </div>
+        <div class="garage-box" onclick="toggleGarage(5)">
+          <div class="garage-number">Garage 5</div>
+          <div class="vehicle-type">-</div>
+          <div class="status">Frei</div>
+        </div>
+      </div>
 
-        let selectedGarage = null;
+      <div class="legend">
+        <div class="legend-item"><div class="legend-box legend-nef"></div><span>NEF</span></div>
+        <div class="legend-item"><div class="legend-box legend-rtw"></div><span>RTW</span></div>
+        <div class="legend-item"><div class="legend-box legend-empty"></div><span>Frei</span></div>
+      </div>
+    </div>
 
-        function updateTimestamp() {
-            const now = new Date();
-            document.getElementById('timestamp').textContent = now.toLocaleString('de-DE');
+    <div class="controls">
+      <button class="btn" onclick="addNEF()">NEF zuweisen</button>
+      <button class="btn" onclick="addRTW()">RTW zuweisen</button>
+      <button class="btn" onclick="clearAll()">Alle freigeben</button>
+    </div>
+
+    <div class="timestamp">
+      <p>Letzte Aktualisierung: <span id="timestamp"></span></p>
+    </div>
+  </div>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <script>
+    // 🔧 DEINE FIREBASE KONFIGURATION HIER EINFÜGEN
+  const firebaseConfig = {
+  apiKey: "AIzaSyBMcltJKt9ANy7usCiQu5r7oA_g8QrjKAg",
+  authDomain: "nmgbf-6fbfd.firebaseapp.com",
+  databaseURL: "https://nmgbf-6fbfd-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "nmgbf-6fbfd",
+  storageBucket: "nmgbf-6fbfd.firebasestorage.app",
+  messagingSenderId: "762040096687",
+  appId: "1:762040096687:web:40d94c972b117f0c78015a",
+  measurementId: "G-765C8X09Q4"
+};
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+  </script>
+
+  <script>
+    let garages = {};
+    let selectedGarage = null;
+
+    firebase.database().ref('garagen').on('value', (snapshot) => {
+      const data = snapshot.val();
+      garages = data || {
+        1: { type: '', occupied: false },
+        2: { type: '', occupied: false },
+        3: { type: '', occupied: false },
+        4: { type: '', occupied: false },
+        5: { type: '', occupied: false }
+      };
+      updateGarageDisplay();
+    });
+
+    function saveGarages() {
+      db.ref('garagen').set(garages);
+    }
+
+    function updateGarageDisplay() {
+      const boxes = document.querySelectorAll('.garage-box');
+      boxes.forEach((box, i) => {
+        const num = i + 1;
+        const data = garages[num];
+        box.className = 'garage-box ' + (data.occupied ? 'occupied' : 'empty');
+        box.children[1].textContent = data.occupied ? data.type : '-';
+        box.children[2].textContent = data.occupied ? 'Belegt' : 'Frei';
+      });
+      updateTimestamp();
+    }
+
+    function updateTimestamp() {
+      const now = new Date();
+      document.getElementById('timestamp').textContent = now.toLocaleString('de-DE');
+    }
+
+    function toggleGarage(num) {
+      selectedGarage = num;
+      if (garages[num].occupied) {
+        garages[num].occupied = false;
+        garages[num].type = '';
+        saveGarages();
+      }
+    }
+
+    function addNEF() {
+      if (selectedGarage) {
+        garages[selectedGarage] = { type: 'NEF', occupied: true };
+        selectedGarage = null;
+        saveGarages();
+        return;
+      }
+      for (let i = 1; i <= 5; i++) {
+        if (!garages[i].occupied) {
+          garages[i] = { type: 'NEF', occupied: true };
+          saveGarages();
+          break;
         }
+      }
+    }
 
-        function updateGarageDisplay() {
-            for (let i = 1; i <= 5; i++) {
-                const garage = document.querySelector(`.garage-box:nth-child(${i})`);
-                const data = garages[i];
-                
-                garage.className = 'garage-box ' + (data.occupied ? 'occupied' : 'empty');
-                garage.children[1].textContent = data.occupied ? data.type : '-';
-                garage.children[2].textContent = data.occupied ? 'Belegt' : 'Frei';
-            }
-            updateTimestamp();
+    function addRTW() {
+      if (selectedGarage) {
+        garages[selectedGarage] = { type: 'RTW', occupied: true };
+        selectedGarage = null;
+        saveGarages();
+        return;
+      }
+      for (let i = 1; i <= 5; i++) {
+        if (!garages[i].occupied) {
+          garages[i] = { type: 'RTW', occupied: true };
+          saveGarages();
+          break;
         }
+      }
+    }
 
-        function toggleGarage(garageNum) {
-            selectedGarage = garageNum;
-            const garage = garages[garageNum];
-            
-            if (garage.occupied) {
-                garage.occupied = false;
-                garage.type = '';
-            }
-            
-            updateGarageDisplay();
-        }
-
-        function addNEF() {
-            if (selectedGarage) {
-                garages[selectedGarage].type = 'NEF';
-                garages[selectedGarage].occupied = true;
-                selectedGarage = null;
-                updateGarageDisplay();
-            } else {
-                // Erste freie Garage finden
-                for (let i = 1; i <= 5; i++) {
-                    if (!garages[i].occupied) {
-                        garages[i].type = 'NEF';
-                        garages[i].occupied = true;
-                        break;
-                    }
-                }
-                updateGarageDisplay();
-            }
-        }
-
-        function addRTW() {
-            if (selectedGarage) {
-                garages[selectedGarage].type = 'RTW';
-                garages[selectedGarage].occupied = true;
-                selectedGarage = null;
-                updateGarageDisplay();
-            } else {
-                // Erste freie Garage finden
-                for (let i = 1; i <= 5; i++) {
-                    if (!garages[i].occupied) {
-                        garages[i].type = 'RTW';
-                        garages[i].occupied = true;
-                        break;
-                    }
-                }
-                updateGarageDisplay();
-            }
-        }
-
-        function clearAll() {
-            for (let i = 1; i <= 5; i++) {
-                garages[i].occupied = false;
-                garages[i].type = '';
-            }
-            selectedGarage = null;
-            updateGarageDisplay();
-        }
-
-        // Initial setup
-        updateGarageDisplay();
-    </script>
+    function clearAll() {
+      for (let i = 1; i <= 5; i++) {
+        garages[i] = { type: '', occupied: false };
+      }
+      selectedGarage = null;
+      saveGarages();
+    }
+  </script>
 </body>
 </html>
