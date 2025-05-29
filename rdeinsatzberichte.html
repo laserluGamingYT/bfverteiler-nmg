@@ -1,526 +1,201 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Einsatzberichte - Rettungswache</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-            min-height: 100vh;
-            padding: 20px;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
-            overflow: hidden;
-        }
-
-        .header {
-            background: linear-gradient(45deg, #dc2626, #ef4444);
-            color: white;
-            padding: 25px;
-            text-align: center;
-            position: relative;
-        }
-
-        .header::before {
-            content: '🚨';
-            position: absolute;
-            left: 30px;
-            top: 50%;
-            transform: translateY(-50%);
-            font-size: 2em;
-        }
-
-        .header h1 {
-            font-size: 2.2em;
-            margin-bottom: 5px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-        }
-
-        .header p {
-            opacity: 0.9;
-            font-size: 1.1em;
-        }
-
-        .controls {
-            background: #f8fafc;
-            padding: 20px;
-            border-bottom: 1px solid #e2e8f0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 15px;
-        }
-
-        .filter-group {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
-
-        .btn {
-            background: linear-gradient(45deg, #3b82f6, #1d4ed8);
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 0.95em;
-            transition: all 0.3s ease;
-            font-weight: 500;
-        }
-
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
-        }
-
-        .btn.success {
-            background: linear-gradient(45deg, #10b981, #059669);
-        }
-
-        .btn.success:hover {
-            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
-        }
-
-        .btn.danger {
-            background: linear-gradient(45deg, #dc2626, #b91c1c);
-        }
-
-        .btn.danger:hover {
-            box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
-        }
-
-        .select {
-            padding: 8px 12px;
-            border: 2px solid #e2e8f0;
-            border-radius: 6px;
-            font-size: 0.95em;
-            background: white;
-        }
-
-        .reports-container {
-            max-height: 600px;
-            overflow-y: auto;
-            padding: 20px;
-        }
-
-        .report-card {
-            background: white;
-            border: 1px solid #e2e8f0;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-            transition: all 0.3s ease;
-            position: relative;
-        }
-
-        .report-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
-        }
-
-        .report-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-
-        .report-id {
-            font-size: 1.2em;
-            font-weight: bold;
-            color: #1e40af;
-        }
-
-        .priority {
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.85em;
-            font-weight: bold;
-            text-transform: uppercase;
-        }
-
-        .priority.high {
-            background: #fee2e2;
-            color: #dc2626;
-        }
-
-        .priority.medium {
-            background: #fef3c7;
-            color: #d97706;
-        }
-
-        .priority.low {
-            background: #dcfce7;
-            color: #16a34a;
-        }
-
-        .report-details {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-bottom: 15px;
-        }
-
-        .detail-item {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .detail-label {
-            font-size: 0.85em;
-            color: #64748b;
-            margin-bottom: 3px;
-            font-weight: 500;
-        }
-
-        .detail-value {
-            font-weight: 600;
-            color: #1e293b;
-        }
-
-        .report-description {
-            background: #f8fafc;
-            padding: 15px;
-            border-radius: 8px;
-            border-left: 4px solid #3b82f6;
-            margin-top: 15px;
-        }
-
-        .status-badge {
-            position: absolute;
-            top: 15px;
-            right: 60px;
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 0.8em;
-            font-weight: bold;
-        }
-
-        .delete-btn {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            background: #ef4444;
-            color: white;
-            border: none;
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            cursor: pointer;
-            font-size: 0.9em;
-            font-weight: bold;
-        }
-
-        .delete-btn:hover {
-            background: #dc2626;
-        }
-
-        .status-active {
-            background: #fee2e2;
-            color: #dc2626;
-        }
-
-        .status-completed {
-            background: #dcfce7;
-            color: #16a34a;
-        }
-
-        .status-cancelled {
-            background: #f3f4f6;
-            color: #6b7280;
-        }
-
-        .stats {
-            background: #f8fafc;
-            padding: 20px;
-            border-top: 1px solid #e2e8f0;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 20px;
-        }
-
-        .stat-item {
-            text-align: center;
-            padding: 15px;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        }
-
-        .stat-number {
-            font-size: 1.8em;
-            font-weight: bold;
-            color: #1e40af;
-        }
-
-        .stat-label {
-            font-size: 0.9em;
-            color: #64748b;
-            margin-top: 5px;
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
-            color: #64748b;
-        }
-
-        .empty-state h3 {
-            margin-bottom: 10px;
-            color: #374151;
-        }
-
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.5);
-        }
-
-        .modal-content {
-            background-color: white;
-            margin: 5% auto;
-            padding: 30px;
-            border-radius: 15px;
-            width: 90%;
-            max-width: 600px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-        }
-
-        .close {
-            color: #aaa;
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
-            cursor: pointer;
-            margin-top: -10px;
-        }
-
-        .close:hover {
-            color: #000;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: 600;
-            color: #374151;
-        }
-
-        .form-group input,
-        .form-group select,
-        .form-group textarea {
-            width: 100%;
-            padding: 10px;
-            border: 2px solid #e2e8f0;
-            border-radius: 8px;
-            font-size: 1em;
-            font-family: inherit;
-        }
-
-        .form-group textarea {
-            height: 100px;
-            resize: vertical;
-        }
-
-        .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-        }
-
-        @media (max-width: 768px) {
-            .controls {
-                flex-direction: column;
-                align-items: stretch;
-            }
-
-            .filter-group {
-                justify-content: center;
-            }
-
-            .report-header {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-
-            .report-details {
-                grid-template-columns: 1fr;
-            }
-
-            .form-row {
-                grid-template-columns: 1fr;
-            }
-
-            .modal-content {
-                margin: 10% auto;
-                width: 95%;
-            }
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Garagenbelegung - Rettungswache</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      margin: 0;
+      padding: 20px;
+      min-height: 100vh;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 15px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+      overflow: hidden;
+    }
+    .header {
+      background: linear-gradient(45deg, #dc2626, #ef4444);
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+    .header h1 {
+      margin: 0;
+      font-size: 2em;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    }
+    .garage-layout {
+      padding: 30px;
+      background: #f8fafc;
+    }
+    .garage-row {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin-bottom: 30px;
+      flex-wrap: wrap;
+    }
+    .garage-box {
+      width: 180px;
+      height: 120px;
+      border: 3px solid #cbd5e1;
+      border-radius: 10px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      background: white;
+      position: relative;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    .garage-box:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+    }
+    .garage-box.occupied {
+      background: linear-gradient(135deg, #dc2626, #ef4444);
+      border-color: #b91c1c;
+      color: white;
+    }
+    .garage-box.empty {
+      background: linear-gradient(135deg, #10b981, #34d399);
+      border-color: #059669;
+      color: white;
+    }
+    .garage-number {
+      font-size: 1.2em;
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+    .vehicle-type {
+      font-size: 1.1em;
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+    .status {
+      font-size: 0.9em;
+      opacity: 0.9;
+    }
+    .legend {
+      display: flex;
+      justify-content: center;
+      gap: 30px;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .legend-box {
+      width: 20px;
+      height: 20px;
+      border-radius: 4px;
+    }
+    .legend-nef, .legend-rtw {
+      background: linear-gradient(135deg, #dc2626, #ef4444);
+    }
+    .legend-empty {
+      background: linear-gradient(135deg, #10b981, #34d399);
+    }
+    .controls {
+      text-align: center;
+      padding: 20px;
+      background: #e2e8f0;
+      border-top: 1px solid #cbd5e1;
+    }
+    .btn {
+      background: linear-gradient(45deg, #3b82f6, #1d4ed8);
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1em;
+      margin: 0 10px;
+      transition: all 0.3s ease;
+    }
+    .btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3);
+    }
+    .timestamp {
+      text-align: center;
+      color: #64748b;
+      font-size: 0.9em;
+      padding: 10px;
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>Einsatzberichte</h1>
-            <p>Aktuelle und abgeschlossene Rettungseinsätze - Dauerhaft gespeichert</p>
-        </div>
-        
-        <div class="controls">
-            <div class="filter-group">
-                <select id="statusFilter" class="select" onchange="filterReports()">
-                    <option value="all">Alle Status</option>
-                    <option value="active">Aktiv</option>
-                    <option value="completed">Abgeschlossen</option>
-                    <option value="cancelled">Abgebrochen</option>
-                </select>
-                
-                <select id="priorityFilter" class="select" onchange="filterReports()">
-                    <option value="all">Alle Prioritäten</option>
-                    <option value="high">Hoch</option>
-                    <option value="medium">Mittel</option>
-                    <option value="low">Niedrig</option>
-                </select>
-            </div>
-            
-            <div class="filter-group">
-                <button class="btn success" onclick="openModal()">+ Neuer Einsatz</button>
-                <button class="btn danger" onclick="clearAllReports()">🗑 Alle löschen</button>
-                <button class="btn" onclick="exportReports()">📊 Backup</button>
-            </div>
-        </div>
-        
-        <div class="reports-container" id="reportsContainer">
-            <div class="empty-state">
-                <h3>Keine Einsatzberichte vorhanden</h3>
-                <p>Klicken Sie auf "Neuer Einsatz" um den ersten Bericht zu erstellen.</p>
-            </div>
-        </div>
-        
-        <div class="stats">
-            <div class="stat-item">
-                <div class="stat-number" id="totalReports">0</div>
-                <div class="stat-label">Gesamt Einsätze</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-number" id="activeReports">0</div>
-                <div class="stat-label">Aktive Einsätze</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-number" id="completedReports">0</div>
-                <div class="stat-label">Abgeschlossen</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-number" id="avgResponseTime">0</div>
-                <div class="stat-label">Ø Anfahrtszeit (Min)</div>
-            </div>
-        </div>
+  <div class="container">
+    <div class="header">
+      <h1>🚑 Garagenbelegung Rettungswache</h1>
     </div>
 
-    <!-- Modal -->
-    <div id="reportModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeModal()">&times;</span>
-            <h2 id="modalTitle">Neuer Einsatzbericht</h2>
-            <form id="reportForm" onsubmit="saveReport(event)">
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="priority">Priorität</label>
-                        <select id="priority" required>
-                            <option value="high">Hoch</option>
-                            <option value="medium" selected>Mittel</option>
-                            <option value="low">Niedrig</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="status">Status</label>
-                        <select id="status" required>
-                            <option value="active" selected>Aktiv</option>
-                            <option value="completed">Abgeschlossen</option>
-                            <option value="cancelled">Abgebrochen</option>
-                        </select>
-                    </div>
-                </div>
-                
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="vehicle">Fahrzeug</label>
-                        <input type="text" id="vehicle" required placeholder="z.B. RTW 12/83-01">
-                    </div>
-                    <div class="form-group">
-                        <label for="crew">Besatzung</label>
-                        <input type="text" id="crew" required placeholder="z.B. Müller, Schmidt">
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label for="address">Einsatzort</label>
-                    <input type="text" id="address" required placeholder="Straße, Hausnummer, Ort">
-                </div>
-                
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="emergency">Notfall/Grund</label>
-                        <input type="text" id="emergency" required placeholder="z.B. Herzinfarkt, Unfall">
-                    </div>
-                    <div class="form-group">
-                        <label for="responseTime">Anfahrtszeit (Min)</label>
-                        <input type="number" id="responseTime" min="0" placeholder="Nur wenn abgeschlossen">
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label for="description">Beschreibung</label>
-                    <textarea id="description" required placeholder="Detaillierte Beschreibung des Einsatzes..."></textarea>
-                </div>
-                
-                <div class="form-group">
-                    <label for="outcome">Ergebnis</label>
-                    <textarea id="outcome" required placeholder="Behandlungsergebnis, Transport, etc."></textarea>
-                </div>
-                
-                <div style="text-align: center; margin-top: 30px;">
-                    <button type="button" class="btn" onclick="closeModal()" style="margin-right: 10px;">Abbrechen</button>
-                    <button type="submit" class="btn success">Speichern</button>
-                </div>
-            </form>
+    <div class="garage-layout">
+      <div class="garage-row">
+        <div class="garage-box" onclick="toggleGarage(1)">
+          <div class="garage-number">Garage 1</div>
+          <div class="vehicle-type">-</div>
+          <div class="status">Frei</div>
         </div>
+        <div class="garage-box" onclick="toggleGarage(2)">
+          <div class="garage-number">Garage 2</div>
+          <div class="vehicle-type">-</div>
+          <div class="status">Frei</div>
+        </div>
+        <div class="garage-box" onclick="toggleGarage(3)">
+          <div class="garage-number">Garage 3</div>
+          <div class="vehicle-type">-</div>
+          <div class="status">Frei</div>
+        </div>
+        <div class="garage-box" onclick="toggleGarage(4)">
+          <div class="garage-number">Garage 4</div>
+          <div class="vehicle-type">-</div>
+          <div class="status">Frei</div>
+        </div>
+        <div class="garage-box" onclick="toggleGarage(5)">
+          <div class="garage-number">Garage 5</div>
+          <div class="vehicle-type">-</div>
+          <div class="status">Frei</div>
+        </div>
+      </div>
+
+      <div class="legend">
+        <div class="legend-item"><div class="legend-box legend-nef"></div><span>NEF</span></div>
+        <div class="legend-item"><div class="legend-box legend-rtw"></div><span>RTW</span></div>
+        <div class="legend-item"><div class="legend-box legend-empty"></div><span>Frei</span></div>
+      </div>
     </div>
 
-     <!-- Firebase SDKs -->
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <div class="controls">
+      <button class="btn" onclick="addNEF()">NEF zuweisen</button>
+      <button class="btn" onclick="addRTW()">RTW zuweisen</button>
+      <button class="btn" onclick="clearAll()">Alle freigeben</button>
+    </div>
 
-    <script>
-    // 🔧 HIER DEINE EIGENE KONFIGURATION EINTRAGEN!
-    const firebaseConfig = {
+    <div class="timestamp">
+      <p>Letzte Aktualisierung: <span id="timestamp"></span></p>
+    </div>
+  </div>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <script>
+    // 🔧 DEINE FIREBASE KONFIGURATION HIER EINFÜGEN
+  const firebaseConfig = {
   apiKey: "AIzaSyBMcltJKt9ANy7usCiQu5r7oA_g8QrjKAg",
   authDomain: "nmgbf-6fbfd.firebaseapp.com",
   databaseURL: "https://nmgbf-6fbfd-default-rtdb.europe-west1.firebasedatabase.app",
@@ -529,185 +204,96 @@
   messagingSenderId: "762040096687",
   appId: "1:762040096687:web:40d94c972b117f0c78015a",
   measurementId: "G-765C8X09Q4"
-};
-
+};;
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
+  </script>
 
-    let reports = [];
-    let filteredReports = [];
-    let editingId = null;
+  <script>
+    let garages = {};
+    let selectedGarage = null;
 
-    window.addEventListener('load', function () {
-        loadReports();
+    firebase.database().ref('garagen').on('value', (snapshot) => {
+      const data = snapshot.val();
+      garages = data || {
+        1: { type: '', occupied: false },
+        2: { type: '', occupied: false },
+        3: { type: '', occupied: false },
+        4: { type: '', occupied: false },
+        5: { type: '', occupied: false }
+      };
+      updateGarageDisplay();
     });
 
-    function loadReports() {
-        db.ref('/reports').on('value', snapshot => {
-            const data = snapshot.val();
-            reports = data ? Object.values(data).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)) : [];
-            filteredReports = [...reports];
-            renderReports();
-            updateStats();
-        });
+    function saveGarages() {
+      db.ref('garagen').set(garages);
     }
 
-    function saveToStorage() {
-        const updates = {};
-        reports.forEach(report => {
-            updates[`/reports/${report.id}`] = report;
-        });
-        db.ref().update(updates);
+    function updateGarageDisplay() {
+      const boxes = document.querySelectorAll('.garage-box');
+      boxes.forEach((box, i) => {
+        const num = i + 1;
+        const data = garages[num];
+        box.className = 'garage-box ' + (data.occupied ? 'occupied' : 'empty');
+        box.children[1].textContent = data.occupied ? data.type : '-';
+        box.children[2].textContent = data.occupied ? 'Belegt' : 'Frei';
+      });
+      updateTimestamp();
     }
 
-    function generateId() {
-        const today = new Date();
-        const year = today.getFullYear();
-        const count = reports.length + 1;
-        return `E-${year}-${String(count).padStart(3, '0')}`;
+    function updateTimestamp() {
+      const now = new Date();
+      document.getElementById('timestamp').textContent = now.toLocaleString('de-DE');
     }
 
-    function saveReport(event) {
-        event.preventDefault();
-
-        const formData = {
-            id: editingId || generateId(),
-            status: document.getElementById('status').value,
-            priority: document.getElementById('priority').value,
-            vehicle: document.getElementById('vehicle').value,
-            crew: document.getElementById('crew').value,
-            address: document.getElementById('address').value,
-            emergency: document.getElementById('emergency').value,
-            time: new Date().toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' }),
-            responseTime: document.getElementById('responseTime').value ? parseInt(document.getElementById('responseTime').value) : null,
-            description: document.getElementById('description').value,
-            outcome: document.getElementById('outcome').value,
-            timestamp: new Date().toISOString()
-        };
-
-        db.ref(`/reports/${formData.id}`).set(formData);
-        closeModal();
+    function toggleGarage(num) {
+      selectedGarage = num;
+      if (garages[num].occupied) {
+        garages[num].occupied = false;
+        garages[num].type = '';
+        saveGarages();
+      }
     }
 
-    function deleteReport(id) {
-        if (confirm('Sind Sie sicher, dass Sie diesen Einsatzbericht löschen möchten?')) {
-            db.ref(`/reports/${id}`).remove();
+    function addNEF() {
+      if (selectedGarage) {
+        garages[selectedGarage] = { type: 'NEF', occupied: true };
+        selectedGarage = null;
+        saveGarages();
+        return;
+      }
+      for (let i = 1; i <= 5; i++) {
+        if (!garages[i].occupied) {
+          garages[i] = { type: 'NEF', occupied: true };
+          saveGarages();
+          break;
         }
+      }
     }
 
-    function clearAllReports() {
-        if (confirm('Sind Sie sicher, dass Sie ALLE Einsatzberichte löschen möchten?')) {
-            db.ref('/reports').remove();
+    function addRTW() {
+      if (selectedGarage) {
+        garages[selectedGarage] = { type: 'RTW', occupied: true };
+        selectedGarage = null;
+        saveGarages();
+        return;
+      }
+      for (let i = 1; i <= 5; i++) {
+        if (!garages[i].occupied) {
+          garages[i] = { type: 'RTW', occupied: true };
+          saveGarages();
+          break;
         }
+      }
     }
 
-    function exportReports() {
-        const dataStr = JSON.stringify(reports, null, 2);
-        const dataBlob = new Blob([dataStr], { type: 'application/json' });
-        const url = URL.createObjectURL(dataBlob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `einsatzberichte_backup_${new Date().toISOString().split('T')[0]}.json`;
-        link.click();
-        URL.revokeObjectURL(url);
+    function clearAll() {
+      for (let i = 1; i <= 5; i++) {
+        garages[i] = { type: '', occupied: false };
+      }
+      selectedGarage = null;
+      saveGarages();
     }
-
-    function filterReports() {
-        const statusFilter = document.getElementById('statusFilter').value;
-        const priorityFilter = document.getElementById('priorityFilter').value;
-
-        filteredReports = reports.filter(report => {
-            const statusMatch = statusFilter === 'all' || report.status === statusFilter;
-            const priorityMatch = priorityFilter === 'all' || report.priority === priorityFilter;
-            return statusMatch && priorityMatch;
-        });
-
-        renderReports();
-    }
-
-    function updateStats() {
-        document.getElementById('totalReports').textContent = reports.length;
-        document.getElementById('activeReports').textContent = reports.filter(r => r.status === 'active').length;
-        document.getElementById('completedReports').textContent = reports.filter(r => r.status === 'completed').length;
-
-        const completedWithTime = reports.filter(r => r.responseTime);
-        const avgTime = completedWithTime.length > 0
-            ? Math.round(completedWithTime.reduce((sum, r) => sum + r.responseTime, 0) / completedWithTime.length)
-            : 0;
-        document.getElementById('avgResponseTime').textContent = avgTime;
-    }
-
-    function renderReports() {
-        const container = document.getElementById('reportsContainer');
-
-        if (filteredReports.length === 0) {
-            container.innerHTML = `
-                <div class="empty-state">
-                    <h3>Keine Einsatzberichte gefunden</h3>
-                    <p>${reports.length === 0 ? 'Klicken Sie auf "Neuer Einsatz" um den ersten Bericht zu erstellen.' : 'Es wurden keine Berichte gefunden, die den aktuellen Filterkriterien entsprechen.'}</p>
-                </div>
-            `;
-            return;
-        }
-
-        container.innerHTML = filteredReports.map(report => `
-            <div class="report-card">
-                <button class="delete-btn" onclick="deleteReport('${report.id}')">×</button>
-                <div class="status-badge status-${report.status}">${report.status.toUpperCase()}</div>
-                <div class="report-header">
-                    <div class="report-id" onclick="editReport('${report.id}')">${report.id}</div>
-                    <div class="priority ${report.priority}">${report.priority.toUpperCase()}</div>
-                </div>
-                <div class="report-details">
-                    <div class="detail-item"><div class="detail-label">Fahrzeug</div><div class="detail-value">${report.vehicle}</div></div>
-                    <div class="detail-item"><div class="detail-label">Besatzung</div><div class="detail-value">${report.crew}</div></div>
-                    <div class="detail-item"><div class="detail-label">Einsatzort</div><div class="detail-value">${report.address}</div></div>
-                    <div class="detail-item"><div class="detail-label">Notfall</div><div class="detail-value">${report.emergency}</div></div>
-                    <div class="detail-item"><div class="detail-label">Alarmzeit</div><div class="detail-value">${report.time}</div></div>
-                    <div class="detail-item"><div class="detail-label">Anfahrtszeit</div><div class="detail-value">${report.responseTime ? report.responseTime + ' Min' : 'Läuft'}</div></div>
-                </div>
-                <div class="report-description">
-                    <strong>Beschreibung:</strong><br>${report.description}<br><br>
-                    <strong>Ergebnis:</strong><br>${report.outcome}
-                </div>
-            </div>
-        `).join('');
-    }
-
-    function openModal() {
-        editingId = null;
-        document.getElementById('modalTitle').textContent = 'Neuer Einsatzbericht';
-        document.getElementById('reportForm').reset();
-        document.getElementById('reportModal').style.display = 'block';
-    }
-
-    function closeModal() {
-        document.getElementById('reportModal').style.display = 'none';
-        editingId = null;
-    }
-
-    function editReport(id) {
-        const report = reports.find(r => r.id === id);
-        if (!report) return;
-        editingId = id;
-        document.getElementById('modalTitle').textContent = 'Einsatzbericht bearbeiten';
-        document.getElementById('status').value = report.status;
-        document.getElementById('priority').value = report.priority;
-        document.getElementById('vehicle').value = report.vehicle;
-        document.getElementById('crew').value = report.crew;
-        document.getElementById('address').value = report.address;
-        document.getElementById('emergency').value = report.emergency;
-        document.getElementById('responseTime').value = report.responseTime || '';
-        document.getElementById('description').value = report.description;
-        document.getElementById('outcome').value = report.outcome;
-        document.getElementById('reportModal').style.display = 'block';
-    }
-
-    // Modal schließen bei Klick außerhalb
-    window.onclick = function (event) {
-        const modal = document.getElementById('reportModal');
-        if (event.target === modal) closeModal();
-    };
-    </script>
+  </script>
 </body>
 </html>
