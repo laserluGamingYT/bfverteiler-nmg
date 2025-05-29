@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AAO - Alarm- und Ausrückeordnung</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            background: linear-gradient(135deg, #1e40af, #3b82f6);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .controls {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .search-box {
+            padding: 10px;
+            font-size: 16px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            width: 300px;
+            margin-right: 10px;
+        }
+        
+        .export-btn {
+            background-color: #059669;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        
+        .export-btn:hover {
+            background-color: #047857;
+        }
+        
+        .table-container {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+        
+        th {
+            background: linear-gradient(135deg, #dc2626, #ef4444);
+            color: white;
+            padding: 12px 8px;
+            text-align: left;
+            font-weight: bold;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        
+        td {
+            padding: 10px 8px;
+            border-bottom: 1px solid #e5e7eb;
+            vertical-align: top;
+        }
+        
+        tr:nth-child(even) {
+            background-color: #f9fafb;
+        }
+        
+        tr:hover {
+            background-color: #e0f2fe;
+        }
+        
+        .stichwort {
+            font-weight: bold;
+            color: #dc2626;
+        }
+        
+        .prioritaet-1 {
+            background-color: #fee2e2;
+            color: #991b1b;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .prioritaet-2 {
+            background-color: #fef3c0;
+            color: #92400e;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .prioritaet-3 {
+            background-color: #dcfce7;
+            color: #166534;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .fahrzeuge {
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+        }
+        
+        .stats {
+            margin-top: 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #1e40af;
+        }
+        
+        .responsive-table {
+            overflow-x: auto;
+        }
+        
+        @media (max-width: 768px) {
+            .search-box {
+                width: 100%;
+                margin-bottom: 10px;
+            }
+            
+            table {
+                font-size: 12px;
+            }
+            
+            th, td {
+                padding: 8px 4px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🚒 Alarm- und Ausrückeordnung (AAO)</h1>
+        <h2>Berufsfeuerwehr und Rettungsdienst</h2>
+        <p>Stand: Mai 2025</p>
+    </div>
+    
+    <div class="controls">
+        <input type="text" id="searchInput" class="search-box" placeholder="Suche nach Stichwort, Fahrzeug oder Beschreibung...">
+        <button class="export-btn" onclick="exportToCSV()">📊 Als CSV exportieren</button>
+    </div>
+    
+    <div class="table-container">
+        <div class="responsive-table">
+            <table id="aaoTable">
+                <thead>
+                    <tr>
+                        <th>Stichwort</th>
+                        <th>Beschreibung</th>
+                        <th>Priorität</th>
+                        <th>Fahrzeuge BF</th>
+                        <th>Fahrzeuge RD</th>
+                        <th>Besondere Maßnahmen</th>
+                        <th>Nachalarmierung</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <tr>
+                        <td class="stichwort">B1</td>
+                        <td>Kleinbrand</td>
+                        <td><span class="prioritaet-2">Normal</span></td>
+                        <td class="fahrzeuge">HLF 20, DLK 23/12</td>
+                        <td class="fahrzeuge">-</td>
+                        <td>Erkundung, ggf. Nachalarmierung</td>
+                        <td>Bei Erfordernis B2</td>
+                    </tr>
+                    <tr>
+                        <td class="stichwort">B2</td>
+                        <td>Mittelbrand</td>
+                        <td><span class="prioritaet-1">Hoch</span></td>
+                        <td class="fahrzeuge">2x HLF 20, DLK 23/12, ELW 1</td>
+                        <td class="fahrzeuge">RTW</td>
+                        <td>Atemschutz, Wasserversorgung</td>
+                        <td>Bei Bedarf B3</td>
+                    </tr>
+                    <tr>
+                        <td class="stichwort">B3</td>
+                        <td>Großbrand</td>
+                        <td><span class="prioritaet-1">Sehr Hoch</span></td>
+                        <td class="fahrzeuge">3x HLF 20, 2x DLK 23/12, ELW 1, SW 2000</td>
+                        <td class="fahrzeuge">RTW, NEF</td>
+                        <td>Einsatzleitung, Atemschutzüberwachung</td>
+                        <td>Nach Lage weitere Kräfte</td>
+                    </tr>
+                    <tr>
+                        <td class="stichwort">BMA</td>
+                        <td>Brandmeldeanlage</td>
+                        <td><span class="prioritaet-2">Normal</span></td>
+                        <td class="fahrzeuge">HLF 20, DLK 23/12</td>
+                        <td class="fahrzeuge">-</td>
+                        <td>Erkundung, Kontakt Hausmeister</td>
+                        <td>Bei Bestätigung B1-B3</td>
+                    </tr>
+                    <tr>
+                        <td class="stichwort">H1</td>
+                        <td>Hilfeleistung klein</td>
+                        <td><span class="prioritaet-3">Niedrig</span></td>
+                        <td class="fahrzeuge">HLF 20</td>
+                        <td class="fahrzeuge">-</td>
+                        <td>Technische Hilfeleistung</td>
+                        <td>Bei Bedarf H2</td>
+                    </tr>
+                    <tr>
+                        <td class="stichwort">H2</td>
+                        <td>Hilfeleistung groß</td>
+                        <td><span class="prioritaet-2">Normal</span></td>
+                        <td class="fahrzeuge">HLF 20, RW 2, DLK 23/12</td>
+                        <td class="fahrzeuge">RTW</td>
+                        <td>Schwere Technik, Absicherung</td>
+                        <td>Bei komplexer Lage H3</td>
+                    </tr>
+                    <tr>
+                        <td class="stichwort">VU1</td>
+                        <td>Verkehrsunfall eingeklemmt</td>
+                        <td><span class="prioritaet-1">Hoch</span></td>
+                        <td class="fahrzeuge">HLF 20, RW 2</td>
+                        <td class="fahrzeuge">RTW, NEF</td>
+                        <td>Patientenrettung, Brandschutz</td>
+                        <td>Bei mehreren Verletzten VU2</td>
+                    </tr>
+                    <tr>
+                        <td class="stichwort">VU2</td>
+                        <td>Verkehrsunfall schwer</td>
+                        <td><span class="prioritaet-1">Sehr Hoch</span></td>
+                        <td class="fahrzeuge">2x HLF 20, RW 2, ELW 1</td>
+                        <td class="fahrzeuge">2x RTW, NEF, OrgL</td>
+                        <td>Massenanfall, Einsatzleitung</td>
+                        <td>LNA, weitere RTW</td>
+                    </tr>
+                    <tr>
+                        <td class="stichwort">ABC1</td>
+                        <td>ABC-Einsatz klein</td>
+                        <td><span class="prioritaet-1">Hoch</span></td>
+                        <td class="fahrzeuge">HLF 20, GW-G, AB-G</td>
+                        <td class="fahrzeuge">RTW, NEF</td>
+                        <td>Messungen, Dekontamination</td>
+                        <td>Bei Bestätigung ABC2</td>
+                    </tr>
+                    <tr>
+                        <td class="stichwort">ABC2</td>
+                        <td>ABC-Einsatz groß</td>
+                        <td><span class="prioritaet-1">Sehr Hoch</span></td>
+                        <td class="fahrzeuge">2x HLF 20, GW-G, AB-G, ELW 1, GW-A</td>
+                        <td class="fahrzeuge">2x RTW, NEF, OrgL</td>
+                        <td>Dekonstelle, Einsatzleitung</td>
+                        <td>ABC-Zug, weitere Kräfte</td>
+                    </tr>
+                    <tr>
+                        <td class="stichwort">MANV</td>
+                        <td>Massenanfall Verletzte</td>
+                        <td><span class="prioritaet-1">Sehr Hoch</span></td>
+                        <td class="fahrzeuge">HLF 20, ELW 1</td>
+                        <td class="fahrzeuge">3x RTW, 2x NEF, OrgL, LNA</td>
+                        <td>Sichtung, Behandlungsplatz</td>
+                        <td>SEG, weitere RTW/KTW</td>
+                    </tr>
+                    <tr>
+                        <td class="stichwort">WASSER</td>
+                        <td>Wasserrettung</td>
+                        <td><span class="prioritaet-1">Hoch</span></td>
+                        <td class="fahrzeuge">HLF 20, RW 2, GW-W</td>
+                        <td class="fahrzeuge">RTW, NEF</td>
+                        <td>Tauchergruppe, Absicherung</td>
+                        <td>Bei Bedarf Hubschrauber</td>
+                    </tr>
+                    <tr>
+                        <td class="stichwort">HÖHE</td>
+                        <td>Höhenrettung</td>
+                        <td><span class="prioritaet-2">Normal</span></td>
+                        <td class="fahrzeuge">DLK 23/12, HLF 20, GW-H</td>
+                        <td class="fahrzeuge">RTW, NEF</td>
+                        <td>Höhenretter, Sicherung</td>
+                        <td>Bei komplexer Lage weitere DLK</td>
+                    </tr>
+                    <tr>
+                        <td class="stichwort">TIER</td>
+                        <td>Tierrettung</td>
+                        <td><span class="prioritaet-3">Niedrig</span></td>
+                        <td class="fahrzeuge">HLF 20</td>
+                        <td class="fahrzeuge">-</td>
+                        <td>Tierfanggerät, Veterinär</td>
+                        <td>Bei Bedarf Tierarzt</td>
+                    </tr>
+                    <tr>
+                        <td class="stichwort">GEBÄUDE</td>
+                        <td>Gebäudeeinsturz</td>
+                        <td><span class="prioritaet-1">Sehr Hoch</span></td>
+                        <td class="fahrzeuge">2x HLF 20, RW 2, ELW 1, GW-B</td>
+                        <td class="fahrzeuge">2x RTW, NEF, OrgL</td>
+                        <td>Baustatiker, Ortungsgeräte</td>
+                        <td>THW, Rettungshunde</td>
+                    </tr>
+                    <tr>
+                        <td class="stichwort">GAS</td>
+                        <td>Gasaustritt</td>
+                        <td><span class="prioritaet-1">Hoch</span></td>
+                        <td class="fahrzeuge">HLF 20, RW 2, AB-G</td>
+                        <td class="fahrzeuge">RTW</td>
+                        <td>Messungen, Absperrung, Ex-Schutz</td>
+                        <td>Bei Bestätigung ABC1/ABC2</td>
+                    </tr>
+                    <tr>
+                        <td class="stichwort">ÖLAUSTRITT</td>
+                        <td>Ölspur/Gewässerverunreinigung</td>
+                        <td><span class="prioritaet-2">Normal</span></td>
+                        <td class="fahrzeuge">HLF 20, SW 2000, GW-Ö</td>
+                        <td class="fahrzeuge">-</td>
+                        <td>Bindemittel, Umweltschutz</td>
+                        <td>Bei größerer Menge weitere SW</td>
+                    </tr>
+                    <tr>
+                        <td class="stichwort">STURM</td>
+                        <td>Sturmschäden</td>
+                        <td><span class="prioritaet-2">Normal</span></td>
+                        <td class="fahrzeuge">2x HLF 20, DLK 23/12, RW 2</td>
+                        <td class="fahrzeuge">RTW</td>
+                        <td>Absicherung, Sägearbeiten</td>
+                        <td>Bei Großschadenslage ELW 1</td>
+                    </tr>
+                    <tr>
+                        <td class="stichwort">UNWETTER</td>
+                        <td>Unwetter/Starkregen</td>
+                        <td><span class="prioritaet-2">Normal</span></td>
+                        <td class="fahrzeuge">HLF 20, SW 2000, TSF-W</td>
+                        <td class="fahrzeuge">-</td>
+                        <td>Wasserschäden, Lenzpumpen</td>
+                        <td>Bei Bedarf weitere SW/TSF-W</td>
+                    </tr>
+                    <tr>
+                        <td class="stichwort">PERSON</td>
+                        <td>Person in Notlage</td>
+                        <td><span class="prioritaet-2">Normal</span></td>
+                        <td class="fahrzeuge">HLF 20, DLK 23/12</td>
+                        <td class="fahrzeuge">RTW, NEF</td>
+                        <td>Türöffnung, Rettung</td>
+                        <td>Bei Bedarf weitere Hilfsmittel</td>
+                    </tr>
+                    <tr>
+                        <td class="stichwort">FEUER IM FREIEN</td>
+                        <td>Flächen-/Waldbrand</td>
+                        <td><span class="prioritaet-1">Hoch</span></td>
+                        <td class="fahrzeuge">2x HLF 20, TLF 4000, SW 2000</td>
+                        <td class="fahrzeuge">RTW</td>
+                        <td>Wasserversorgung, Ausbreitung verhindern</td>
+                        <td>Bei Ausbreitung weitere TLF/SW</td>
+                    </tr>
+                    <tr>
+                        <td class="stichwort">KAMIN</td>
+                        <td>Kaminbrand</td>
+                        <td><span class="prioritaet-2">Normal</span></td>
+                        <td class="fahrzeuge">HLF 20, DLK 23/12</td>
+                        <td class="fahrzeuge">-</td>
+                        <td>Schornsteinfeger, Kontrolle</td>
+                        <td>Bei Übergreifen B1-B2</td>
+                    </tr>
+                    <tr>
+                        <td class="stichwort">AUFZUG</td>
+                        <td>Aufzug mit Personen</td>
+                        <td><span class="prioritaet-2">Normal</span></td>
+                        <td class="fahrzeuge">HLF 20</td>
+                        <td class="fahrzeuge">RTW</td>
+                        <td>Befreiung, Servicetechniker</td>
+                        <td>Bei komplizierter Lage RW 2</td>
+                    </tr>
+                    <tr>
+                        <td class="stichwort">BAHN</td>
+                        <td>Bahnunfall</td>
+                        <td><span class="prioritaet-1">Sehr Hoch</span></td>
+                        <td class="fahrzeuge">2x HLF 20, RW 2, ELW 1</td>
+                        <td class="fahrzeuge">2x RTW, NEF, OrgL</td>
+                        <td>Bahnstrom aus, DB-Notfallmanager</td>
+                        <td>Bei MANV: SEG, LNA</td>
+                    </tr>
+                    <tr>
+                        <td class="stichwort">FLUGZEUG</td>
+                        <td>Flugzeugnotfall</td>
+                        <td><span class="prioritaet-1">Sehr Hoch</span></td>
+                        <td class="fahrzeuge">3x HLF 20, 2x SW 2000, ELW 1</td>
+                        <td class="fahrzeuge">3x RTW, 2x NEF, OrgL</td>
+                        <td>Löschschaum, Sonderfahrzeuge</td>
+                        <td>Flughafenfeuerwehr, LNA</td>
+                    </tr>
+                    <tr>
+                        <td class="stichwort">SCHIFF</td>
+                        <td>Schiffsunfall</td>
+                        <td><span class="prioritaet-1">Hoch</span></td>
+                        <td class="fahrzeuge">HLF 20, GW-W, SW 2000</td>
+                        <td class="fahrzeuge">RTW, NEF</td>
+                        <td>Wasserrettung, Brandschutz</td>
+                        <td>Wasserschutzpolizei, Taucher</td>
+                    </tr>
+                    <tr>
+                        <td class="stichwort">EXPLOSION</td>
+                        <td>Explosion/Verpuffung</td>
+                        <td><span class="prioritaet-1">Sehr Hoch</span></td>
+                        <td class="fahrzeuge">3x HLF 20, RW 2, ELW 1, AB-G</td>
+                        <td class="fahrzeuge">3x RTW, 2x NEF, OrgL</td>
+                        <td>Messungen, Einsturzgefahr prüfen</td>
+                        <td>ABC-Zug, Baustatiker</td>
+                    </tr>
+                    <tr>
+                        <td class="stichwort">SILO</td>
+                        <td>Silo-/Behälterunfall</td>
+                        <td><span class="prioritaet-1">Hoch</span></td>
+                        <td class="fahrzeuge">HLF 20, RW 2, GW-H</td>
+                        <td class="fahrzeuge">RTW, NEF</td>
+                        <td>Höhenrettung, CSA, Messungen</td>
+                        <td>Spezial-Rettungsgerät</td>
+                    </tr>
+                    <tr>
+                        <td class="stichwort">ELEKTRO</td>
+                        <td>Elektrischer Unfall</td>
+                        <td><span class="prioritaet-1">Hoch</span></td>
+                        <td class="fahrzeuge">HLF 20, RW 2</td>
+                        <td class="fahrzeuge">RTW, NEF</td>
+                        <td>Strom aus, Erdung, Isolierung</td>
+                        <td>Energieversorger</td>
+                    </tr>
+                    <tr>
+                        <td class="stichwort">BRAND TUNNEL</td>
+                        <td>Tunnelbrand</td>
+                        <td><span class="prioritaet-1">Sehr Hoch</span></td>
+                        <td class="fahrzeuge">3x HLF 20, RW 2, ELW 1, SW 2000</td>
+                        <td class="fahrzeuge">3x RTW, 2x NEF, OrgL</td>
+                        <td>Lüftung, beide Tunnelseiten</td>
+                        <td>Spezial-Atemschutz, B4</td>
+                    </tr>
+                    <tr>
+                        <td class="stichwort">BRAND TIEFGARAGE</td>
+                        <td>Tiefgaragenbrand</td>
+                        <td><span class="prioritaet-1">Hoch</span></td>
+                        <td class="fahrzeuge">2x HLF 20, DLK 23/12, ELW 1</td>
+                        <td class="fahrzeuge">2x RTW, NEF</td>
+                        <td>Belüftung, Evakuierung</td>
+                        <td>Bei Ausbreitung B3</td>
+                    </tr>
+                    <tr>
+                        <td class="stichwort">BRAND HOCHHAUS</td>
+                        <td>Hochhausbrand</td>
+                        <td><span class="prioritaet-1">Sehr Hoch</span></td>
+                        <td class="fahrzeuge">4x HLF 20, 2x DLK 23/12, ELW 1, ELW 2</td>
+                        <td class="fahrzeuge">3x RTW, 2x NEF, OrgL</td>
+                        <td>Evakuierung, Treppenraumdruckbelüftung</td>
+                        <td>Bereitstellungsraum, weitere DLK</td>
+                    </tr>
+                    <tr>
+                        <td class="stichwort">BRAND KFZ</td>
+                        <td>Fahrzeugbrand</td>
+                        <td><span class="prioritaet-2">Normal</span></td>
+                        <td class="fahrzeuge">HLF 20, TLF 4000</td>
+                        <td class="fahrzeuge">-</td>
+                        <td>Schaum bei E-Fahrzeugen</td>
+                        <td>Bei Übergreifen B1-B2</td>
+                    </tr>
+                    <tr>
+                        <td class="stichwort">BRAND E-FAHRZEUG</td>
+                        <td>Elektrofahrzeugbrand</td>
+                        <td><span class="prioritaet-1">Hoch</span></td>
+                        <td class="fahrzeuge">HLF 20, TLF 4000, SW 2000</td>
+                        <td class="fahrzeuge">RTW</td>
+                        <td>Kühlung, Abstand, Messungen</td>
+                        <td>Spezial-Container, weitere SW</td>
+                    </tr>
+                    <tr>
+                        <td class="stichwort">BRAND LKW</td>
+                        <td>LKW-Brand</td>
+                        <td><span class="prioritaet-1">Hoch</span></td>
+                        <td class="fahrzeuge">2x HLF 20, TLF 4000, SW 2000</td>
+                        <td class="fahrzeuge">RTW</td>
+                        <td>Ladung prüfen, Schaum</td>
+                        <td>Bei Gefahrgut ABC1/ABC2</td>
+                    </tr>
+                    <tr>
+                        <td class="stichwort">RETTUNGSDIENST 1</td>
+                        <td>Notfall ohne Notarzt</td>
+                        <td><span class="prioritaet-2">Normal</span></td>
+                        <td class="fahrzeuge">-</td>
+                        <td class="fahrzeuge">RTW</td>
+                        <td>Patientenversorgung</td>
+                        <td>Bei Bedarf NEF nachalarmieren</td>
+                    </tr>
+                    <tr>
+                        <td class="stichwort">RETTUNGSDIENST 2</td>
+                        <td>Notfall mit Notarzt</td>
+                        <td><span class="prioritaet-1">Hoch</span></td>
+                        <td class="fahrzeuge">-</td>
+                        <td class="fahrzeuge">RTW, NEF</td>
+                        <td>Erweiterte Therapie</td>
+                        <td>Bei Bedarf RTH</td>
+                    </tr>
+                    <tr>
+                        <td class="stichwort">REANIMATION</td>
+                        <td>Herz-Kreislauf-Stillstand</td>
+                        <td><span class="prioritaet-1">Sehr Hoch</span></td>
+                        <td class="fahrzeuge">HLF 20 (First Responder)</td>
+                        <td class="fahrzeuge">RTW, NEF</td>
+                        <td>CPR, Defibrillation</td>
+                        <td>Bei Bedarf RTH</td>
+                    </tr>
+                    <tr>
+                        <td class="stichwort">RTH</td>
+                        <td>Rettungshubschrauber</td>
+                        <td><span class="prioritaet-1">Hoch</span></td>
+                        <td class="fahrzeuge">HLF 20 (Landeplatz)</td>
+                        <td class="fahrzeuge">RTW, RTH</td>
+                        <td>Landeplatz sichern, Einweisung</td>
+                        <td>Ground Support Team</td>
+                    </tr>
+                    <tr>
+                        <td class="stichwort">KINDERNOTFALL</td>
+                        <td>Pädiatrischer Notfall</td>
+                        <td><span class="prioritaet-1">Hoch</span></td>
+                        <td class="fahrzeuge">-</td>
+                        <td class="fahrzeuge">RTW, NEF (Kindernotarzt)</td>
+                        <td>Spezialausrüstung Pädiatrie</td>
+                        <td>Kinderklinik direkter Transport</td>
+                    </tr>
+                    <tr>
+                        <td class="stichwort">PSYCHIATRIE</td>
+                        <td>Psychiatrischer Notfall</td>
+                        <td><span class="prioritaet-2">Normal</span></td>
+                        <td class="fahrzeuge">-</td>
+                        <td class="fahrzeuge">RTW, NEF</td>
+                        <td>Polizei bei Eigen-/Fremdgefährdung</td>
+                        <td>Betreuungsdienst</td>
+                    </tr>
+                    <tr>
+                        <td class="stichwort">VERGIFTUNG</td>
+                        <td>Intoxikation</td>
+                        <td><span class="prioritaet-1">Hoch</span></td>
+                        <td class="fahrzeuge">HLF 20</td>
+                        <td class="fahrzeuge">RTW, NEF</td>
+                        <td>Giftinformationszentrum</td>
+                        <td>Bei ABC-Lage entsprechende Stichwörter</td>
+                    </tr>
+                    <tr>
+                        <td class="stichwort">GEBURT</td>
+                        <td>Notgeburt</td>
+                        <td><span class="prioritaet-1">Hoch</span></td>
+                        <td class="fahrzeuge">-</td>
+                        <td class="fahrzeuge">RTW, NEF (Gynäkologe)</td>
+                        <td>Spezialausrüstung Geburt</td>
+                        <td>2. RTW für Neugeborenes</td>
+                    </tr>
+                    <tr>
+                        <td class="stichwort">SEG BETREUUNG</td>
+                        <td>Betreuungsdienst</td>
+                        <td><span class="prioritaet-3">Niedrig</span></td>
+                        <td class="fahrzeuge">-</td>
+                        <td class="fahrzeuge">BetrKW, GW-San</td>
+                        <td>Betreuung Unverletzter</td>
+                        <td>Weitere Betreuungskräfte</td>
+                    </tr>
+                    <tr>
+                        <td class="stichwort">QUARANTÄNE</td>
+                        <td>Infektionsschutz</td>
+                        <td><span class="prioritaet-1">Hoch</span></td>
+                        <td class="fahrzeuge">HLF 20, AB-G</td>
+                        <td class="fahrzeuge">RTW (Isolier), NEF</td>
+                        <td>Dekontamination, Isolierung</td>
+                        <td>Gesundheitsamt, weitere Isolier-RTW</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <div class="stats">
+        <div class="stat-card">
+            <div class="stat-number" id="totalEntries">46</div>
+            <div>Gesamt Stichwörter</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number" id="highPriority">25</div>
+            <div>Hohe Priorität</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number" id="normalPriority">16</div>
+            <div>Normale Priorität</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number" id="lowPriority">5</div>
+            <div>Niedrige Priorität</div>
+        </div>
+    </div>
+
+    <script>
+        // Suchfunktion
+        document.getElementById('searchInput').addEventListener('keyup', function() {
+            const searchValue = this.value.toLowerCase();
+            const tableRows = document.querySelectorAll('#tableBody tr');
+            
+            tableRows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                if (text.includes(searchValue)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
+        
+        // CSV Export Funktion
+        function exportToCSV() {
+            const table = document.getElementById('aaoTable');
+            let csv = [];
+            
+            // Header
+            const headerRow = [];
+            const headers = table.querySelectorAll('th');
+            headers.forEach(header => {
+                headerRow.push('"' + header.textContent.replace(/"/g, '""') + '"');
+            });
+            csv.push(headerRow.join(','));
+            
+            // Daten
+            const rows = table.querySelectorAll('tbody tr');
+            rows.forEach(row => {
+                if (row.style.display !== 'none') {
+                    const rowData = [];
+                    const cells = row.querySelectorAll('td');
+                    cells.forEach(cell => {
+                        rowData.push('"' + cell.textContent.replace(/"/g, '""') + '"');
+                    });
+                    csv.push(rowData.join(','));
+                }
+            });
+            
+            // Download
+            const csvContent = csv.join('\n');
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', 'AAO_Berufsfeuerwehr_Rettungsdienst.csv');
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+        
+        // Statistiken aktualisieren
+        function updateStats() {
+            const rows = document.querySelectorAll('#tableBody tr');
+            let high = 0, normal = 0, low = 0;
+            
+            rows.forEach(row => {
+                const priorityCell = row.querySelector('.prioritaet-1, .prioritaet-2, .prioritaet-3');
+                if (priorityCell) {
+                    if (priorityCell.classList.contains('prioritaet-1')) high++;
+                    else if (priorityCell.classList.contains('prioritaet-2')) normal++;
+                    else if (priorityCell.classList.contains('prioritaet-3')) low++;
+                }
+            });
+            
+            document.getElementById('totalEntries').textContent = rows.length;
+            document.getElementById('highPriority').textContent = high;
+            document.getElementById('normalPriority').textContent = normal;
+            document.getElementById('lowPriority').textContent = low;
+        }
+        
+        // Beim Laden der Seite Statistiken aktualisieren
+        updateStats();
+    </script>
+</body>
+</html>

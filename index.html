@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>Berufsfeuerwehr Verteiler</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, sans-serif;
+      background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+      color: #f9fafb;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    nav {
+      background: #111827;
+      padding: 1em 2em;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    nav a {
+      color: #f9fafb;
+      margin-right: 1.5em;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    .main {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 2em;
+    }
+
+    .container {
+      background: #ffffff;
+      color: #1f2937;
+      border-radius: 12px;
+      padding: 2em 3em;
+      max-width: 900px;
+      width: 100%;
+      box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+    }
+
+    h1 {
+      text-align: center;
+      color: #1e3a8a;
+      margin-bottom: 1em;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 2em;
+    }
+
+    .card {
+      background: #f1f5f9;
+      padding: 2em;
+      border-radius: 10px;
+      text-align: center;
+      transition: transform 0.3s, box-shadow 0.3s;
+      cursor: pointer;
+      text-decoration: none;
+      color: #1e293b;
+      font-weight: bold;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    }
+
+    .card.fire {
+      border-left: 5px solid #dc2626;
+    }
+
+    .card.rd {
+      border-left: 5px solid #16a34a;
+    }
+
+    .card.reports {
+      border-left: 5px solid #2563eb;
+    }
+
+    footer {
+      text-align: center;
+      padding: 1em;
+      font-size: 0.9em;
+      background: #1e293b;
+      color: #9ca3af;
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <div><a href="index.html">🏠 Start</a></div>
+    <div>Berufsfeuerwehr Mönchengladbach</div>
+  </nav>
+
+  <div class="main">
+    <div class="container">
+      <h1>Berufsfeuerwehr Verteiler</h1>
+      <p style="text-align:center; margin-bottom: 2em;">Bitte wähle deinen Bereich:</p>
+
+      <div class="grid">
+        <a href="Garagenbelegungnmg.html" class="card fire">Garagenbelegung</a>
+        <a href="aao.html" class="card rd">Alarm- und Ausrückeordnung (AAO)</a>
+        <a href="rdeinsatzberichte.html" class="card reports">📋 Einsatzberichte</a>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    &copy; 2025 Berufsfeuerwehr – Verteiler
+
+</body>
+</html>
